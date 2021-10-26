@@ -65,7 +65,6 @@ void LogicalOrToAnd::applyMutation(llvm::Function *function, const MutationPoint
   }
 }
 
-#pragma mark - Private: Apply mutations: OR -> AND
 
 void LogicalOrToAnd::applyMutationORToAND_Pattern1(BranchInst *firstBranch,
                                                    BranchInst *secondBranch) {
@@ -244,7 +243,6 @@ void LogicalOrToAnd::applyMutationORToAND_Pattern3(BranchInst *firstBranch,
   firstBranch->eraseFromParent();
 }
 
-#pragma mark - Private: Finding possible mutations
 
 OR_AND_MutationType LogicalOrToAnd::findPossibleMutationInBranch(BranchInst *branchInst,
                                                                  BranchInst **secondBranchInst) {

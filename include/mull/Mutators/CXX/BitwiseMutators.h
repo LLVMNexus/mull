@@ -5,7 +5,6 @@
 namespace mull {
 namespace cxx {
 
-#pragma mark - Shifts
 
 class LShiftToRShift : public TrivialCXXMutator {
 public:
@@ -31,7 +30,6 @@ public:
   RShiftAssignToLShiftAssign();
 };
 
-#pragma mark - Bit operations
 
 class BitwiseOrToAnd : public TrivialCXXMutator {
 public:
