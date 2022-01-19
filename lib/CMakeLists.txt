@@ -1,6 +1,7 @@
 add_subdirectory(Mutators/CXX)
 add_subdirectory(Diagnostics)
 add_subdirectory(Config)
+add_subdirectory(ClangHeaders)
 
 set(mull_sources
   AST/ASTConstants.cpp
@@ -132,6 +133,7 @@ target_link_libraries(mull
   mull-configuration
   Diagnostics
   reproc++
+  mull-clang-headers
   )
 target_include_directories(mull PUBLIC
   ${MULL_INCLUDE_DIRS}

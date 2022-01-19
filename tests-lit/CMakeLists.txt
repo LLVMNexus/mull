@@ -34,7 +34,7 @@ set(LIT_COMMAND
   TEST_CXX_FLAGS="${TEST_CXX_FLAGS}"
   ${LIT_EXEC}
   -vv
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/junk_detection/06_clang_headers
   )
 
 add_custom_target(tests-lit

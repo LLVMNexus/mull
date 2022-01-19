@@ -1,6 +1,7 @@
 #include "mull/Driver.h"
 
 #include "mull/BitcodeMetadataReader.h"
+#include "mull/ClangHeaders/ClangHeaders.h"
 #include "mull/Config/Configuration.h"
 #include "mull/Diagnostics/Diagnostics.h"
 #include "mull/Filters/FilePathFilter.h"
@@ -455,10 +456,12 @@ void mull::mutateBitcode(llvm::Module &module) {
     diagnostics.info(std::string("Found compilation flags in the input bitcode"));
   }
 
+  auto clangHeaders = mull::getClangHeaders();
   mull::ASTStorage astStorage(diagnostics,
                               configuration.compilationDatabasePath,
                               cxxCompilationFlags,
-                              bitcodeCompilationFlags);
+                              bitcodeCompilationFlags,
+                              clangHeaders);
 
   mull::CXXJunkDetector junkDetector(diagnostics, astStorage);
   if (!configuration.junkDetectionDisabled) {

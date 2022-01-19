@@ -191,10 +191,21 @@ bool ThreadSafeASTUnit::hasAST() const {
 
 ASTStorage::ASTStorage(Diagnostics &diagnostics, const std::string &cxxCompilationDatabasePath,
                        const std::string &cxxCompilationFlags,
-                       const std::unordered_map<std::string, std::string> &bitcodeCompilationFlags)
+                       const std::unordered_map<std::string, std::string> &bitcodeCompilationFlags,
+                       const std::unordered_map<std::string, std::string> &vfsMapping)
     : diagnostics(diagnostics),
       compilationDatabase(CompilationDatabase::fromFile(
-          diagnostics, cxxCompilationDatabasePath, cxxCompilationFlags, bitcodeCompilationFlags)) {}
+          diagnostics, cxxCompilationDatabasePath, cxxCompilationFlags, bitcodeCompilationFlags)) {
+
+  auto memFS = new llvm::vfs::InMemoryFileSystem();
+  for (auto &[file, content] : vfsMapping) {
+    memFS->addFile(file, 0, llvm::MemoryBuffer::getMemBuffer(llvm::StringRef(content), file));
+  }
+  auto realFS = llvm::vfs::getRealFileSystem();
+  auto overlay = new llvm::vfs::OverlayFileSystem(realFS);
+  overlay->pushOverlay(memFS);
+  vfs = llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem>(overlay);
+}
 
 ThreadSafeASTUnit *ASTStorage::findAST(const mull::SourceLocation &sourceLocation) {
   const std::string &sourceFile = sourceLocation.unitFilePath;
@@ -233,7 +244,24 @@ ThreadSafeASTUnit *ASTStorage::findAST(const std::string &sourceFile) {
                                                  args.data() + args.size(),
                                                  std::make_shared<clang::PCHContainerOperations>(),
                                                  diagnosticsEngine,
-                                                 "");
+                                                 "",
+                                                 false,
+                                                 clang::CaptureDiagsKind::None,
+                                                 llvm::None,
+                                                 true,
+                                                 0,
+                                                 clang::TU_Complete,
+                                                 false,
+                                                 false,
+                                                 false,
+                                                 clang::SkipFunctionBodiesScope::None,
+                                                 false,
+                                                 false,
+                                                 false,
+                                                 false,
+                                                 llvm::None,
+                                                 nullptr,
+                                                 vfs);
 
   bool hasErrors = (ast == nullptr) || diagnosticsEngine->hasErrorOccurred() ||
                    diagnosticsEngine->hasUnrecoverableErrorOccurred() ||

@@ -45,7 +45,8 @@ class ASTStorage {
 public:
   ASTStorage(Diagnostics &diagnostics, const std::string &cxxCompilationDatabasePath,
              const std::string &cxxCompilationFlags,
-             const std::unordered_map<std::string, std::string> &bitcodeCompilationFlags);
+             const std::unordered_map<std::string, std::string> &bitcodeCompilationFlags,
+             const std::unordered_map<std::string, std::string> &vfsMapping);
 
   ThreadSafeASTUnit *findAST(const mull::SourceLocation &sourceLocation);
   ThreadSafeASTUnit *findAST(const std::string &sourceFile);
@@ -59,6 +60,7 @@ private:
 
   CompilationDatabase compilationDatabase;
   std::unordered_map<std::string, std::unique_ptr<ThreadSafeASTUnit>> astUnits;
+  llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> vfs;
 };
 
 } // namespace mull

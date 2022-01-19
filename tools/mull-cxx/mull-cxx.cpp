@@ -187,7 +187,7 @@ int main(int argc, char **argv) {
                                           bitcodeCompilationFlagsAvailable;
 
   mull::ASTStorage astStorage(
-      diagnostics, cxxCompilationDatabasePath, cxxCompilationFlags, bitcodeCompilationFlags);
+      diagnostics, cxxCompilationDatabasePath, cxxCompilationFlags, bitcodeCompilationFlags, {});
   std::vector<std::string> commandLineOptions{ argv, argv + argc };
   std::string commandLine =
       std::accumulate(commandLineOptions.begin(),
