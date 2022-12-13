@@ -1,0 +1,23 @@
+name: Install dependencies
+description: Install dependencies
+runs:
+  using: "composite"
+  steps:
+    - name: Install dependencies
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install -y python3-pip cmake ninja-build sqlite3
+        apt-get install -y libsqlite3-dev ncurses-dev
+
+    - name: Install dependencies
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        brew install gnu-tar ninja cmake
+
+    - name: Install Python dependencies
+      shell: bash
+      run: |
+        pip3 install lit filecheck cloudsmith-cli

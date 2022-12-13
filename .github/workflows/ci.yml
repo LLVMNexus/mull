@@ -1,0 +1,75 @@
+name: CI
+
+env:
+  CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DEBIAN_FRONTEND: noninteractive
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - "**"
+
+jobs:
+  ubuntu-20-04:
+    name: Ubuntu 20.04 / LLVM ${{ matrix.LLVM_VERSION }}
+    runs-on: ubuntu-latest
+    container: ubuntu:20.04
+    strategy:
+      matrix:
+        LLVM_VERSION: ["11", "12"]
+    env:
+      DISTR_REPO: "ubuntu/focal"
+
+    steps:
+      - name: Debugging
+        run: |
+          env | sort
+          cat $GITHUB_EVENT_PATH
+
+      - name: Install git
+        run: |
+          apt-get update
+          apt-get install -y git
+          git config --global --add safe.directory $PWD
+
+      - name: Checkout sources
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Running CI
+        uses: ./actions/run-ci-task
+        with:
+          LLVM_VERSION: ${{ matrix.LLVM_VERSION }}
+
+
+  macos-11:
+    name: macOS 11 / LLVM ${{ matrix.LLVM_VERSION }}
+    runs-on: macos-11
+    strategy:
+      matrix:
+        LLVM_VERSION: ["11.0", "12.0", "13.0", "14.0"]
+
+    steps:
+      - name: Debugging
+        run: |
+          env | sort
+          cat $GITHUB_EVENT_PATH
+
+      - name: Fix git
+        run: |
+          git config --global --add safe.directory $PWD
+
+      - name: Checkout sources
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Running CI
+        uses: ./actions/run-ci-task
+        with:
+          LLVM_VERSION: ${{ matrix.LLVM_VERSION }}

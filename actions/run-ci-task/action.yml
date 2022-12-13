@@ -1,0 +1,50 @@
+name: Run CI
+description: Run CI
+inputs:
+  LLVM_VERSION:
+    description: 'LLVM Version'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Install dependencies
+      uses: ./actions/install-dependencies/
+
+    - name: Detect metadata
+      id: metadata
+      uses: ./actions/detect-mull-metadata/
+
+    - name: Install LLVM
+      id: llvm
+      uses: ./actions/install-llvm/
+      with:
+        LLVM_VERSION: ${{ matrix.LLVM_VERSION }}
+
+#    - name: Build and test (debug)
+#      uses: ./actions/build-and-test-mull/
+#      with:
+#        LLVM_VERSION: ${{ inputs.LLVM_VERSION }}
+#        BUILD_TYPE: Debug
+#        clang: ${{ steps.llvm.outputs.clang }}
+#        clangxx: ${{ steps.llvm.outputs.clangxx }}
+#        cmake-prefix: ${{ steps.llvm.outputs.cmake-prefix }}
+#        mull-version: ${{ steps.metadata.outputs.version }}${{ steps.metadata.outputs.version-suffix }}
+#        install: false
+
+    - name: Build and test (release)
+      uses: ./actions/build-and-test-mull/
+      with:
+        LLVM_VERSION: ${{ inputs.LLVM_VERSION }}
+        BUILD_TYPE: Release
+        clang: ${{ steps.llvm.outputs.clang }}
+        clangxx: ${{ steps.llvm.outputs.clangxx }}
+        cmake-prefix: ${{ steps.llvm.outputs.cmake-prefix }}
+        mull-version: ${{ steps.metadata.outputs.version }}${{ steps.metadata.outputs.version-suffix }}
+        install: true
+
+    - name: Publish package
+      uses: ./actions/publish-package/
+      with:
+        mull-version: ${{ steps.metadata.outputs.version }}${{ steps.metadata.outputs.version-suffix }}
+        channel: ${{ steps.metadata.outputs.channel }}
+        LLVM_VERSION: ${{ inputs.LLVM_VERSION }}

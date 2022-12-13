@@ -1,0 +1,70 @@
+name: Building Mull
+description: Build Mull
+inputs:
+  LLVM_VERSION:
+    description: 'LLVM Version'
+    required: true
+  BUILD_TYPE:
+    description: 'Debug or Release'
+    required: true
+  clang:
+    description: 'clang'
+    required: true
+  clangxx:
+    description: 'clang++'
+    required: true
+  cmake-prefix:
+    description: 'CMAKE_PREFIX_PATH'
+    required: true
+  mull-version:
+    description: 'mull version'
+    required: true
+  install:
+    description: 'installs mull'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Create build dir
+      shell: bash
+      run: |
+        mkdir -p build.${{ inputs.BUILD_TYPE }}.dir
+    - name: Prepare build system
+      working-directory: build.${{ inputs.BUILD_TYPE }}.dir
+      shell: bash
+      run: |
+        cmake -G Ninja \
+          -DCMAKE_BUILD_TYPE=${{ inputs.BUILD_TYPE }} \
+          -DCMAKE_C_COMPILER=${{ inputs.clang }} \
+          -DCMAKE_CXX_COMPILER=${{ inputs.clangxx }} \
+          -DCMAKE_PREFIX_PATH=${{ inputs.cmake-prefix }} \
+          -DMULL_VERSION=${{ inputs.mull-version }} \
+          ..
+
+    - name: Build and run unit tests
+      working-directory: build.${{ inputs.BUILD_TYPE }}.dir
+      shell: bash
+      run: |
+        ninja mull-tests
+        ./tests/mull-tests
+
+    - name: Run lit tests
+      working-directory: build.${{ inputs.BUILD_TYPE }}.dir
+      shell: bash
+      run: |
+        ninja tests-lit
+
+    - name: Install mull
+      if: ${{ inputs.install }}
+      working-directory: build.${{ inputs.BUILD_TYPE }}.dir
+      shell: bash
+      run: |
+        ninja install
+
+    - name: Package mull
+      if: ${{ inputs.install }}
+      working-directory: build.${{ inputs.BUILD_TYPE }}.dir
+      shell: bash
+      run: |
+        ninja package
+        ls

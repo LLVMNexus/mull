@@ -1,0 +1,48 @@
+name: Install LLVM
+description: Install LLVM
+inputs:
+  LLVM_VERSION:
+    description: 'LLVM Version'
+    required: true
+outputs:
+  clang:
+    description: "clang"
+    value: ${{ steps.compiler-variables.outputs.clang }}
+  clangxx:
+    description: "clang++"
+    value: ${{ steps.compiler-variables.outputs.clangxx }}
+  cmake-prefix:
+    description: "CMAKE_PREFIX_PATH"
+    value: ${{ steps.compiler-variables.outputs.cmake-prefix }}
+runs:
+  using: "composite"
+  steps:
+    - name: Installing LLVM
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        apt-get install -y \
+          llvm-${{ inputs.LLVM_VERSION }}-dev \
+          libclang-${{ inputs.LLVM_VERSION }}-dev \
+          libc++-${{ inputs.LLVM_VERSION }}-dev \
+          libc++abi-${{ inputs.LLVM_VERSION }}-dev \
+          clang-${{ inputs.LLVM_VERSION }}
+
+    - name: Installing LLVM
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        brew install llvm@${{ inputs.LLVM_VERSION }}
+
+    - id: compiler-variables
+      run: |
+        if [[ ${{ runner.os }} == Linux ]]; then
+          echo "clang=clang-${{ inputs.LLVM_VERSION }}" >> $GITHUB_OUTPUT
+          echo "clangxx=clang++-${{ inputs.LLVM_VERSION }}" >> $GITHUB_OUTPUT
+          echo "cmake-prefix=\"/usr/lib/llvm-${{ inputs.LLVM_VERSION }}/cmake/;/usr/lib/cmake/clang-${{ inputs.LLVM_VERSION }}\"" >> $GITHUB_OUTPUT
+        else
+          echo "clang=/usr/local/opt/llvm@${{ inputs.LLVM_VERSION }}/bin/clang" >> $GITHUB_OUTPUT
+          echo "clangxx=/usr/local/opt/llvm@${{ inputs.LLVM_VERSION }}/bin/clang++" >> $GITHUB_OUTPUT
+          echo "cmake-prefix=\"/usr/local/opt/llvm@${{ inputs.LLVM_VERSION }}/lib/cmake/llvm/;/usr/local/opt/llvm@${{ inputs.LLVM_VERSION }}/lib/cmake/clang/\"" >> $GITHUB_OUTPUT
+        fi
+      shell: bash

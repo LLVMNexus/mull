@@ -1,0 +1,49 @@
+name: Publish Mull
+description: Publish Mull
+inputs:
+  mull-version:
+    description: 'mull version'
+    required: true
+  channel:
+    description: 'release channel'
+    required: true
+  LLVM_VERSION:
+    description: 'LLVM Version'
+    required: true
+  GH_TOKEN:
+    description: 'GitHub token'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Publish package
+      if: env.CLOUDSMITH_API_KEY != null && runner.os == 'Linux'
+      working-directory: build.Release.dir
+      shell: bash
+      run: |
+        cloudsmith push deb mull-project/mull-${{ inputs.channel }}/${{ env.DISTR_REPO }} *.deb
+
+    - name: Publish package
+      if: env.CLOUDSMITH_API_KEY != null && runner.os == 'macOS'
+      working-directory: build.Release.dir
+      shell: bash
+      run: |
+        cloudsmith push raw \
+            --name mull-`echo ${{ inputs.LLVM_VERSION }} | awk -F. ' { print $1 } '` \
+            --version ${{ inputs.mull-version }} \
+            mull-project/mull-${{ inputs.channel }} \
+            --tags macos \
+            *.zip
+
+    - name: Attach package to the tag
+      if: contains(github.ref, 'refs/tags/') && env.GITHUB_TOKEN != null
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ env.GITHUB_TOKEN }}
+        file: "*.{deb,zip}"
+        tag: ${{ github.ref }}
+        overwrite: true
+        file_glob: true
+      # This step fails sometimes (with ECONNRESET), but I'm not willing to
+      # debug it as the main source of packages is Cloudsmith
+      continue-on-error: true
