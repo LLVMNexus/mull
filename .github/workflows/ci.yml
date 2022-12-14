@@ -20,7 +20,8 @@ jobs:
     container: ubuntu:20.04
     strategy:
       matrix:
-        LLVM_VERSION: ["11", "12"]
+#        LLVM_VERSION: ["11", "12"]
+        LLVM_VERSION: ["12"]
     env:
       DISTR_REPO: "ubuntu/focal"
 
@@ -52,7 +53,8 @@ jobs:
     runs-on: macos-11
     strategy:
       matrix:
-        LLVM_VERSION: ["11.0", "12.0", "13.0", "14.0"]
+#        LLVM_VERSION: ["11", "12", "13", "14"]
+        LLVM_VERSION: ["12"]
 
     steps:
       - name: Debugging
